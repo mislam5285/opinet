@@ -25,15 +25,13 @@ setup(
     url='https://github.com/ryanwallace96/evosim',
     license='MIT License',
     packages=find_packages(),
-    install_requires=['pandas', 'numpy'],
+    install_requires=['numpy'],
     ext_modules = cythonize('opinet/following_c.pyx'),
     include_dirs=[np.get_include()],
     extra_compile_args=["-w"],
     include_package_data=True,
     keywords=('evolution', 'simulation', 'simulator'),
     classifiers=[  
-        #https://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 1 - Planning',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.7',
         'Topic :: Software Development :: Libraries',

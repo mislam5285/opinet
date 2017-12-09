@@ -1,6 +1,6 @@
-# resolution, hang (remove constraints)
-# documentation
-# refine, run experiments
+"""
+Utility module to graph static graphs and dynamic graphs by animation.
+"""
 
 import os
 import commands
@@ -11,8 +11,11 @@ import igraph as ig
 
 from util import mat_to_edge_list
 
-def plot_graph(E_mat, stances=None, actions=None, scale_nodes=None, layout_seed=None, layout_exact=False, margin=None, file_name=None):
+def plot_graph(E_mat, stances=None, actions=None, scale_nodes=None,  
+               layout_seed=None, layout_exact=False, margin=None,
+               file_name=None):
     """
+    Plots a single static graph.
     """
     n = E_mat.shape[0]
     edge_list = mat_to_edge_list(E_mat)
@@ -29,7 +32,9 @@ def plot_graph(E_mat, stances=None, actions=None, scale_nodes=None, layout_seed=
     if layout_seed is None:
         visual_style["layout"] = G.layout("kk")
     else:
-        visual_style["layout"] = layout_seed if layout_exact else G.layout_kamada_kawai(maxiter=500, seed=layout_seed)
+        visual_style["layout"] = (layout_seed if layout_exact else 
+                                  G.layout_kamada_kawai(maxiter=500, seed=
+                                  layout_seed))
     
     if not scale_nodes is None:
         axis = 0 if scale_nodes == "indegree" else 1
@@ -52,7 +57,8 @@ def plot_graph(E_mat, stances=None, actions=None, scale_nodes=None, layout_seed=
         actions_int = ((np.around(actions, 2) + 1) * 100).astype(int)
         edges_ordered = [e.tuple for e in G.es]
         ordered_actions = [actions_int[j] for (i, j) in edges_ordered]
-        edge_colors = [pal.get(ordered_actions[i]) for i in range(len(ordered_actions))]
+        edge_colors = [pal.get(ordered_actions[i]) for i in range(len(
+                       ordered_actions))]
         G.es["color"] = edge_colors
 
     if not file_name is None:
@@ -62,8 +68,11 @@ def plot_graph(E_mat, stances=None, actions=None, scale_nodes=None, layout_seed=
 
     return ig.plot(G, **visual_style), G, visual_style
 
-def plot_dynamic_graph(G, video_name, stances=None, actions=None, scale_nodes=None, margin=None):
+def plot_dynamic_graph(G, video_name, stances=None, actions=None, 
+                       scale_nodes=None, margin=None):
     """
+    Produces an animation of a time-dynamic graph through repeated calls to 
+    plot_graph().
     """
     T = G.shape[0]
     assert(T < 1000)
@@ -73,38 +82,29 @@ def plot_dynamic_graph(G, video_name, stances=None, actions=None, scale_nodes=No
     shutil.rmtree(video_dir_full)
     os.makedirs(video_dir_full)
     file_names_root = os.path.join(video_name, video_name)
-    file_names = [file_names_root + "_" + (3 - len(str(i))) * "0" + str(i) for i in range(T)]
+    file_names = [file_names_root + "_" + (3 - len(str(i))) * "0" + str(i) for 
+                  i in range(T)]
 
     # initial configuration
     stances_in = None if stances is None else stances[0]
     actions_in = None if actions is None else actions[0]
-    G_plot, G_i, visual_style = plot_graph(G[0], stances=stances_in, actions=actions_in, scale_nodes=scale_nodes, margin=margin, file_name=file_names[0])
+    G_plot, G_i, visual_style = plot_graph(G[0], stances=stances_in, 
+        actions=actions_in, scale_nodes=scale_nodes, margin=margin, 
+        file_name=file_names[0])
 
     # update in each time step
     for t in range(1, T):
         stances_in = None if stances is None else stances[t]
         actions_in = None if actions is None else actions[t]
-        G_plot, G_i, visual_style = plot_graph(G[t], stances=stances_in, actions=actions_in, scale_nodes=scale_nodes, layout_seed=visual_style["layout"], layout_exact=False, margin=margin, file_name=file_names[t])
+        G_plot, G_i, visual_style = plot_graph(G[t], stances=stances_in, 
+            actions=actions_in, scale_nodes=scale_nodes, 
+            layout_seed=visual_style["layout"], layout_exact=False, 
+            margin=margin, file_name=file_names[t])
 
     # create video
-    in_path = os.path.join("..", "plots", video_name, video_name + "_" + "%03d.png")
+    in_path = os.path.join("..", "plots", video_name, video_name + "_" +
+                           "%03d.png")
     out_path = os.path.join("..", "plots", video_name, video_name + ".mp4")
-    call_str = "ffmpeg -r 6 -i " + in_path + " -y -pix_fmt yuv420p -r 6 -crf 18 -q:v 0 " + out_path
+    call_str = ("ffmpeg -r 6 -i " + in_path + 
+                " -y -pix_fmt yuv420p -r 6 -crf 18 -q:v 0 " + out_path)
     commands.getoutput(call_str)
-
-    
-import util
-import graphs
-n, a, b, g, T = 50, -1, 0.01, 0.5, 50
-alphas, betas, gammas = [a] * n, [b] * n, [lambda R: g * R] * n
-# E_mat = graphs.barabasi_albert_graph(n, 2)
-E_mat = np.zeros((n,n))
-# init_stances = np.random.uniform(low=-1, high=1, size=n)
-ordered = np.hstack((np.ones(n/2), -np.ones(n - n/2)))
-init_stances = np.random.permutation(ordered)
-stances, G, _ = util.run_following_experiment(init_stances, alphas, betas, gammas, 'approx_opt', T, E_mat, calc_utilities=True, keep_G=True)
-
-G_plots = plot_dynamic_graph(G, "fun_video", stances=stances, actions=stances, scale_nodes="outdegree", margin=50)
-
-
-

@@ -1,3 +1,8 @@
+"""
+Utility module to create adjacency matrix representation of frequently used
+graph topologies. 
+"""
+
 import numpy as np
 import networkx as nx
 

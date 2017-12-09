@@ -1,3 +1,8 @@
+"""
+Implements the agent and game classes for the Following Game. Each class 
+inherit from the general agent and game class, respectively.
+"""
+
 import numpy as np
 
 from opinet import Agent, Game
@@ -60,13 +65,6 @@ class FollowingGame(Game):
     Describes an instance of a Following Game.
     """
     def __init__(self, agents, init_E_mat, T, calc_utilities=True, keep_G=True):
-        """
-        Args:
-            agents (list): list of DataFrames of action probabilities for each agent
-            default_mutation_rate (float): default mutation rate
-
-            keep history of stances, graph structure, utilities ()
-        """
         Game.__init__(self, agents, T, calc_utilities)
 
         # must be one agent for each node
@@ -84,11 +82,6 @@ class FollowingGame(Game):
             self.G[0] = self.G_curr
 
     def update_structure(self, G):
-        """
-        Args:
-            agents (list): list of DataFrames of action probabilities for each agent
-            default_mutation_rate (float): default mutation rate
-        """
         G_copy = np.copy(G) if self.keep_G else G
 
         updates = self.agents.get_actions(G_copy, self.t)
@@ -103,25 +96,12 @@ class FollowingGame(Game):
         self.G_curr = G_copy
 
     def run(self):
-        """
-        Args:
-            new_agents (DataFrame or list): action probabilities for single or multiple new agents
-        """
         while self.t < self.T:
-            # print "t:\n", self.t
-            # print "stances:\n", self.agents.stances
-            # print "G:\n", self.G_curr
-            # print "utilities:\n", self.utilities
             if self.t != 0:
                 self.update_stances(self.G_curr)
             self.update_structure(self.G_curr)
             self.update_utilities(self.G_curr)
             self.t += 1
-
-        # print "t:\n", self.t
-        # print "stances:\n", self.agents.stances
-        # print "G:\n", self.G_curr
-        # print "utilities:\n", self.utilities
 
         G_out = self.G if self.keep_G else self.G_curr
 

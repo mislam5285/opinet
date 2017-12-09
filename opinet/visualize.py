@@ -79,7 +79,11 @@ def plot_dynamic_graph(G, video_name, stances=None, actions=None,
 
     # names of snapshots
     video_dir_full = os.path.join("..", "plots", video_name)
-    shutil.rmtree(video_dir_full)
+    try:
+        shutil.rmtree(video_dir_full)
+    except OSError:
+        # no directory to delete
+        pass
     os.makedirs(video_dir_full)
     file_names_root = os.path.join(video_name, video_name)
     file_names = [file_names_root + "_" + (3 - len(str(i))) * "0" + str(i) for 

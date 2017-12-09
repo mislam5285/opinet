@@ -65,13 +65,6 @@ class Game(object):
     Describes a general game.
     """
     def __init__(self, agents, T, calc_utilities=True):
-        """
-        Args:
-            agents (list): list of DataFrames of action probabilities for each agent
-            default_mutation_rate (float): default mutation rate
-
-            keep history of stances, graph structure, utilities ()
-        """
         # agents
         self.agents = agents
 
@@ -93,25 +86,18 @@ class Game(object):
         self.T = T
 
     def update_stances(self, G):
-        """
-        Args:
-            agents (list): list of DataFrames of action probabilities for each agent
-            default_mutation_rate (float): default mutation rate
-        """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            avg_info_stances = np.nanmean(self.actions[self.t-1] * G, axis=1)
-        stances = self.agents.betas * avg_info_stances + (1 - self.agents.betas) * self.agents.stances[self.t-1]
-        stances[np.isnan(stances)] = self.agents.stances[self.t-1][np.isnan(stances)]
+            avg_info_stances = np.nanmean(self.agents.stances[self.t-1] * G, 
+                                          axis=1)
+        stances = self.agents.betas * avg_info_stances + (1 - 
+            self.agents.betas) * self.agents.stances[self.t-1]
+        stances[np.isnan(stances)] = self.agents.stances[self.t-1][np.isnan(
+            stances)]
 
         self.agents.stances[self.t] = stances
 
     def update_utilities(self, G):
-        """
-        Args:
-            agents (list): list of DataFrames of action probabilities for each agent
-            default_mutation_rate (float): default mutation rate
-        """
         if self.calc_utilities:
             info_vals = self.agents.apply_gammas(np.nansum(G))
             diffs = abs(self.agents.get_stances_diffs(self.t))
